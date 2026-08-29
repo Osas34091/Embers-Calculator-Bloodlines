@@ -114,6 +114,31 @@
     display:flex; align-items:baseline; gap:8px;
   }
   .ledger-total small{font-size:14px; font-weight:400; color:var(--ash-dim);}
+  
+  .ledger-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .reset-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--line);
+    color: var(--ash-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    padding: 8px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .reset-btn:hover {
+    background: rgba(140, 42, 23, 0.2);
+    border-color: rgba(255, 106, 43, 0.3);
+    color: #ff9a85;
+  }
+
   .lock-pill{
     font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:0.06em;
     padding:8px 14px; border-radius:999px; white-space:nowrap;
@@ -142,7 +167,7 @@
     font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--gold);
     background:rgba(232,177,75,0.1); border:1px solid rgba(232,177,75,0.25);
     padding:2px 7px; border-radius:5px; margin-left:6px;
-    display:inline-block; /* Fixes the visual cut-off bug */
+    display:inline-block; 
     vertical-align:middle;
   }
 
@@ -154,7 +179,6 @@
   input[type="number"]:focus, select:focus{border-color:var(--ember);}
   select{appearance:none; -webkit-appearance:none; background-image:linear-gradient(45deg, transparent 50%, var(--ash-dim) 50%), linear-gradient(135deg, var(--ash-dim) 50%, transparent 50%); background-position:calc(100% - 18px) center, calc(100% - 13px) center; background-size:5px 5px, 5px 5px; background-repeat:no-repeat;}
   
-  /* Select Dropdown Fix */
   option { background-color: var(--soot); color: var(--ash); }
 
   .row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0;}
@@ -227,7 +251,10 @@
       <div class="ledger-label">Projected Embers</div>
       <div class="ledger-total"><span id="total">0</span><small>embers</small></div>
     </div>
-    <div id="lockPill" class="lock-pill locked">🔒 requires age 25+</div>
+    <div class="ledger-controls">
+      <button id="resetBtn" class="reset-btn">↺ Reset</button>
+      <div id="lockPill" class="lock-pill locked">🔒 requires age 25+</div>
+    </div>
   </div>
 
   <div id="ageWarning" class="warn" style="display:none;">
@@ -386,6 +413,74 @@ for(let i=0;i<26;i++){
   pWrap.appendChild(p);
 }
 
+// ---- Data Persistence (LocalStorage) ----
+const STORAGE_KEY = 'bloodlines_embers_data';
+
+function saveData() {
+  const data = {
+    age: $('age').value,
+    rank: $('rank').value,
+    chakra: $('chakra').value,
+    jutsu: $('jutsu').value,
+    bosses: $('bosses').checked,
+    titles: $('titles').value,
+    schemHave: $('schemHave').checked,
+    otherAwaken: $('otherAwaken').value,
+    awakenings: Array.from(document.querySelectorAll('.checklist-grid input[type="checkbox"]')).map(cb => cb.checked)
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function loadData() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      if (data.age !== undefined) $('age').value = data.age;
+      if (data.rank !== undefined) $('rank').value = data.rank;
+      if (data.chakra !== undefined) $('chakra').value = data.chakra;
+      if (data.jutsu !== undefined) $('jutsu').value = data.jutsu;
+      if (data.bosses !== undefined) $('bosses').checked = data.bosses;
+      if (data.titles !== undefined) $('titles').value = data.titles;
+      if (data.schemHave !== undefined) $('schemHave').checked = data.schemHave;
+      if (data.otherAwaken !== undefined) $('otherAwaken').value = data.otherAwaken;
+      
+      if (data.awakenings && Array.isArray(data.awakenings)) {
+        const checkboxes = document.querySelectorAll('.checklist-grid input[type="checkbox"]');
+        checkboxes.forEach((cb, i) => {
+          if (data.awakenings[i] !== undefined) {
+            cb.checked = data.awakenings[i];
+          }
+        });
+      }
+    } catch (e) {
+      console.error("Failed to parse saved data", e);
+    }
+  }
+}
+
+function resetData() {
+  if (confirm('Are you sure you want to reset all calculator data?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    
+    // Reset to defaults
+    $('age').value = 25;
+    $('rank').value = 1;
+    $('chakra').value = 0;
+    $('jutsu').value = 0;
+    $('bosses').checked = false;
+    $('titles').value = 0;
+    $('schemHave').checked = false;
+    $('otherAwaken').value = 0;
+    
+    document.querySelectorAll('.checklist-grid input[type="checkbox"]').forEach(cb => {
+      cb.checked = false;
+    });
+    
+    calc();
+  }
+}
+
 // ---- calculation ----
 const $ = (id) => document.getElementById(id);
 
@@ -431,13 +526,19 @@ function calc(){
     lockPill.className = 'lock-pill locked';
     warn.style.display = 'flex';
   }
+  
+  saveData(); // Save state on every calculation
 }
 
+// Bind events
 document.querySelectorAll('input, select').forEach(el=>{
   el.addEventListener('input', calc);
   el.addEventListener('change', calc);
 });
+$('resetBtn').addEventListener('click', resetData);
 
+// Initialize
+loadData();
 calc();
 </script>
 
