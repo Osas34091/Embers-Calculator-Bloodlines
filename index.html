@@ -270,7 +270,7 @@
     </div>
     <div class="card grid2">
       <div>
-        <label>Age when wiping <span class="points-tag">Unlocks at 25 (+2) · +1 for every full 10th age up</span></label>
+        <label>Age when wiping <span class="points-tag">Unlocks at 25 · +1 for every full 10th age up</span></label>
         <input type="number" id="age" min="0" value="25">
       </div>
       <div>
@@ -496,7 +496,6 @@ function calc(){
 
   let ageBonus = 0;
   if(age >= 25){
-    ageBonus += 2; // Flat +2 for reaching age 25
     ageBonus += Math.floor(age/10); // +1 for every full 10th age up
   }
 
