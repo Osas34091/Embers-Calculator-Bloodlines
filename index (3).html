@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Embers Ledger — Bloodlines</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Antique&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --soot:        #14100e;
+    --soot-2:      #1d1713;
+    --ash:         #cabfae;
+    --ash-dim:     #8c8175;
+    --ember:       #ff6a2b;
+    --ember-2:     #ff9a3d;
+    --coal-red:    #8c2a17;
+    --gold:        #e8b14b;
+    --dojutsu:     #6a3f8f;
+    --line:        rgba(202,191,174,0.12);
+    --card:        rgba(255,255,255,0.03);
+    --card-hover:  rgba(255,255,255,0.05);
+    --radius:      14px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(140,42,23,0.35), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 90% 10%, rgba(255,106,43,0.10), transparent 55%),
+      var(--soot);
+    color:var(--ash);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  /* ---------- ember particles ---------- */
+  #particles{
+    position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden;
+  }
+  .particle{
+    position:absolute; bottom:-10px; border-radius:50%;
+    background:radial-gradient(circle, var(--ember-2) 0%, var(--ember) 40%, transparent 75%);
+    opacity:0; filter:blur(0.3px);
+    animation:rise linear infinite;
+  }
+  @keyframes rise{
+    0%{transform:translateY(0) translateX(0); opacity:0;}
+    8%{opacity:0.85;}
+    90%{opacity:0.4;}
+    100%{transform:translateY(-110vh) translateX(var(--drift,20px)); opacity:0;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .particle{animation:none; display:none;}
+  }
+
+  main{position:relative; z-index:1; max-width:920px; margin:0 auto; padding:48px 22px 120px;}
+
+  /* ---------- header ---------- */
+  header{position:relative; margin-bottom:38px;}
+  .hero-bg{
+    position:absolute;
+    top:-48px; left:-22px; right:-22px; bottom:-30px;
+    background-image:url('https://tr.rbxcdn.com/180DAY-24cdcf826c9005dbf52d51b018664886/500/280/Image/Jpeg/noFilter');
+    background-size:cover;
+    background-position:center;
+    opacity:0.12;
+    mix-blend-mode:luminosity;
+    pointer-events:none;
+    z-index:-1;
+    mask-image:linear-gradient(to bottom, black 40%, transparent 100%);
+    -webkit-mask-image:linear-gradient(to bottom, black 40%, transparent 100%);
+  }
+  .hero-logo{
+    width:70px;
+    border-radius:12px;
+    margin-bottom:18px;
+    border:1px solid var(--line);
+    box-shadow:0 6px 16px rgba(0,0,0,0.5);
+    display:block;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.22em;
+    text-transform:uppercase; color:var(--ember-2); margin:0 0 10px;
+  }
+  h1{
+    font-family:'Zen Antique',serif; font-weight:400;
+    font-size:clamp(38px,7vw,64px); line-height:0.98; margin:0 0 14px; color:#f2ece1;
+    letter-spacing:0.01em;
+  }
+  h1 span{color:var(--ember);}
+  .lede{max-width:560px; color:var(--ash-dim); font-size:15.5px; line-height:1.6; margin:0;}
+
+  /* ---------- sticky ledger ---------- */
+  .ledger{
+    position:sticky; top:16px; z-index:5;
+    display:flex; align-items:center; justify-content:space-between; gap:18px;
+    background:linear-gradient(180deg, rgba(29,23,19,0.92), rgba(20,16,14,0.92));
+    border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px 24px; margin:0 0 40px;
+    backdrop-filter:blur(10px);
+    box-shadow:0 12px 40px rgba(0,0,0,0.45);
+  }
+  .ledger-label{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.18em;
+    text-transform:uppercase; color:var(--ash-dim); margin-bottom:4px;
+  }
+  .ledger-total{
+    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:clamp(30px,6vw,42px);
+    color:var(--ember-2); text-shadow:0 0 22px rgba(255,106,43,0.45);
+    display:flex; align-items:baseline; gap:8px;
+  }
+  .ledger-total small{font-size:14px; font-weight:400; color:var(--ash-dim);}
+  .lock-pill{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:0.06em;
+    padding:8px 14px; border-radius:999px; white-space:nowrap;
+  }
+  .lock-pill.locked{background:rgba(140,42,23,0.25); color:#ff9a85; border:1px solid rgba(255,106,43,0.35);}
+  .lock-pill.open{background:rgba(232,177,75,0.15); color:var(--gold); border:1px solid rgba(232,177,75,0.35);}
+
+  /* ---------- sections ---------- */
+  section{margin-bottom:34px;}
+  .sec-head{display:flex; align-items:baseline; gap:12px; margin-bottom:14px; border-bottom:1px solid var(--line); padding-bottom:10px;}
+  .sec-icon{font-size:18px; opacity:0.9;}
+  .sec-title{font-family:'Zen Antique',serif; font-weight:400; font-size:21px; color:#efe8db; margin:0;}
+  .sec-sub{font-size:12.5px; color:var(--ash-dim); margin-left:auto; font-family:'JetBrains Mono',monospace;}
+
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px 20px; transition:background 0.15s ease, border-color 0.15s ease;
+  }
+  .card:hover{background:var(--card-hover);}
+
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media (max-width:640px){.grid2{grid-template-columns:1fr;}}
+
+  label{display:block; font-size:13px; color:var(--ash-dim); margin-bottom:7px; font-weight:500;}
+  .points-tag{
+    font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--gold);
+    background:rgba(232,177,75,0.1); border:1px solid rgba(232,177,75,0.25);
+    padding:2px 7px; border-radius:5px; margin-left:6px;
+    display:inline-block; /* Fixes the visual cut-off bug */
+    vertical-align:middle;
+  }
+
+  input[type="number"], select{
+    width:100%; background:rgba(0,0,0,0.28); border:1px solid var(--line); color:var(--ash);
+    font-family:'JetBrains Mono',monospace; font-size:15px; padding:10px 12px; border-radius:9px;
+    outline:none; transition:border-color 0.15s ease;
+  }
+  input[type="number"]:focus, select:focus{border-color:var(--ember);}
+  select{appearance:none; -webkit-appearance:none; background-image:linear-gradient(45deg, transparent 50%, var(--ash-dim) 50%), linear-gradient(135deg, var(--ash-dim) 50%, transparent 50%); background-position:calc(100% - 18px) center, calc(100% - 13px) center; background-size:5px 5px, 5px 5px; background-repeat:no-repeat;}
+  
+  /* Select Dropdown Fix */
+  option { background-color: var(--soot); color: var(--ash); }
+
+  .row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0;}
+  .row + .row{border-top:1px solid var(--line);}
+
+  .check{
+    display:flex; align-items:center; gap:11px; cursor:pointer; user-select:none;
+    padding:9px 4px;
+  }
+  .check input[type="checkbox"]{
+    appearance:none; -webkit-appearance:none; width:18px; height:18px; min-width:18px;
+    border:1.5px solid var(--ash-dim); border-radius:5px; background:rgba(0,0,0,0.25);
+    display:grid; place-content:center; cursor:pointer; transition:border-color 0.15s ease, background 0.15s ease;
+  }
+  .check input[type="checkbox"]::after{
+    content:''; width:9px; height:9px; border-radius:2px; background:var(--ember);
+    transform:scale(0); transition:transform 0.12s ease;
+  }
+  .check input[type="checkbox"]:checked{border-color:var(--ember);}
+  .check input[type="checkbox"]:checked::after{transform:scale(1);}
+  .check .name{font-size:14px; color:var(--ash); flex:1;}
+  .check .val{font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--gold); white-space:nowrap;}
+
+  .subgroup-label{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--ash-dim); margin:16px 0 4px; padding-top:10px; border-top:1px dashed var(--line);
+  }
+  .subgroup-label:first-of-type{border-top:none; margin-top:2px; padding-top:0;}
+
+  .checklist-grid{display:grid; grid-template-columns:1fr 1fr; column-gap:22px;}
+  @media (max-width:640px){.checklist-grid{grid-template-columns:1fr;}}
+
+  .note{
+    font-size:12.5px; color:var(--ash-dim); line-height:1.55; margin-top:12px;
+    padding:11px 13px; background:rgba(0,0,0,0.2); border-left:2px solid var(--coal-red); border-radius:6px;
+  }
+  .note.spec{border-left-color:var(--dojutsu);}
+  .note b{color:var(--ash);}
+
+  .warn{
+    display:flex; gap:12px; align-items:flex-start;
+    background:rgba(140,42,23,0.14); border:1px solid rgba(255,106,43,0.3); border-radius:var(--radius);
+    padding:14px 18px; margin-bottom:28px; font-size:13.5px; line-height:1.55; color:#ffd8c9;
+  }
+
+  footer{
+    margin-top:56px; padding-top:20px; border-top:1px solid var(--line);
+    font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ash-dim); letter-spacing:0.03em;
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  ::selection{background:var(--ember); color:#14100e;}
+</style>
+</head>
+<body>
+
+<div id="particles"></div>
+
+<main>
+  <header>
+    <div class="hero-bg"></div>
+    <img src="https://images.sftcdn.net/images/t_app-cover-s,f_auto/p/64c32335-cd7d-4321-bf43-56997ed2adf0/1470232618/bloodlines-screenshot" alt="Bloodlines Logo" class="hero-logo">
+    <p class="eyebrow">Roblox · Bloodlines Tracker</p>
+    <h1><span>Embers</span> Ledger</h1>
+    <p class="lede">Reconstruct your progression before wiping. Each field adds directly to the total according to community-reported embers rules — edit the values where data is still unconfirmed.</p>
+  </header>
+
+  <div class="ledger">
+    <div>
+      <div class="ledger-label">Projected Embers</div>
+      <div class="ledger-total"><span id="total">0</span><small>embers</small></div>
+    </div>
+    <div id="lockPill" class="lock-pill locked">🔒 requires age 25+</div>
+  </div>
+
+  <div id="ageWarning" class="warn" style="display:none;">
+    ⚠️ Embers are only unlocked if you wipe at <b>age 25 or higher</b>. With your current age, the total shown below is just a reference — it won't be awarded until you meet the requirement.
+  </div>
+
+  <!-- ORIGIN -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-icon">🕐</span>
+      <h3 class="sec-title">Wipe Origin</h3>
+      <span class="sec-sub">age · rank</span>
+    </div>
+    <div class="card grid2">
+      <div>
+        <label>Age when wiping <span class="points-tag">Unlocks at 25 (+2) · +1 for every full 10th age up</span></label>
+        <input type="number" id="age" min="0" value="25">
+      </div>
+      <div>
+        <label>Current rank when wiping</label>
+        <select id="rank">
+          <option value="0">No rank / Missing-nin — +0</option>
+          <option value="1" selected>Genin / D Rated — +1</option>
+          <option value="5">Chunin / B Rated — +5</option>
+          <option value="10">Jonin / S Rated — +10</option>
+          <option value="50">Anbu / Akatsuki — +50</option>
+          <option value="100">Kage / Akatsuki Leader — +100</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- JOURNEY -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-icon">⚔️</span>
+      <h3 class="sec-title">Journey</h3>
+      <span class="sec-sub">chakra · jutsu · bosses</span>
+    </div>
+    <div class="card grid2">
+      <div>
+        <label>Destroyed Chakra Points <span class="points-tag">+1 each</span></label>
+        <input type="number" id="chakra" min="0" value="0">
+      </div>
+      <div>
+        <label>Mastered Jutsus <span class="points-tag">+3 each</span></label>
+        <input type="number" id="jutsu" min="0" value="0">
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px;">
+      <label class="check" style="margin:0;">
+        <input type="checkbox" id="bosses">
+        <span class="name">Defeated all 6 bosses in a single progression (Lava Snake, Samurai, Wood Golem, Yuki, Neji, Manda)</span>
+        <span class="val">+10</span>
+      </label>
+      <div class="note spec">
+        <b>Unconfirmed:</b> Speculation suggests defeating bosses with <b>2 rows of loot</b> gives embers 100%. Not fully confirmed, so it's not automatically calculated here — treat it as something to verify in your own runs.
+      </div>
+    </div>
+  </section>
+
+  <!-- RENOWN -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-icon">🏮</span>
+      <h3 class="sec-title">Renown</h3>
+      <span class="sec-sub">titles · gear</span>
+    </div>
+    <div class="card">
+      <label>Titles obtained <span class="points-tag">+3 for the first · +1 for each after</span></label>
+      <input type="number" id="titles" min="0" value="0">
+    </div>
+    <div class="card" style="margin-top:12px;">
+      <label class="check" style="margin:0;">
+        <input type="checkbox" id="schemHave">
+        <span class="name">I have learned a Weapon Schematic (non-Halloween)</span>
+        <span class="val">+25</span>
+      </label>
+    </div>
+  </section>
+
+  <!-- AWAKENINGS -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-icon">👁️</span>
+      <h3 class="sec-title">Awakenings in inventory</h3>
+      <span class="sec-sub">dojutsu · gates · other</span>
+    </div>
+    <div class="card">
+      <div class="checklist-grid">
+        <div>
+          <div class="subgroup-label">Sharingan</div>
+          <label class="check"><input type="checkbox" data-val="1"><span class="name">Sharingan [Stage 1]</span><span class="val">+1</span></label>
+          <label class="check"><input type="checkbox" data-val="2"><span class="name">Sharingan [Stage 2]</span><span class="val">+2</span></label>
+          <label class="check"><input type="checkbox" data-val="3"><span class="name">Sharingan [Stage 3]</span><span class="val">+3</span></label>
+
+          <div class="subgroup-label">Byakugan</div>
+          <label class="check"><input type="checkbox" data-val="1"><span class="name">Byakugan [Stage 1]</span><span class="val">+1</span></label>
+          <label class="check"><input type="checkbox" data-val="2"><span class="name">Byakugan [Stage 2]</span><span class="val">+2</span></label>
+          <label class="check"><input type="checkbox" data-val="3"><span class="name">Byakugan [Stage 3]</span><span class="val">+3</span></label>
+          <label class="check"><input type="checkbox" data-val="5"><span class="name">Byakugan [Stage 4]</span><span class="val">+5</span></label>
+          <label class="check"><input type="checkbox" data-val="10"><span class="name">Neji's Byakugan</span><span class="val">+10</span></label>
+          <label class="check"><input type="checkbox" data-val="10"><span class="name">Hinata's Byakugan</span><span class="val">+10</span></label>
+
+          <div class="subgroup-label">Ketsuryugan</div>
+          <label class="check"><input type="checkbox" data-val="1"><span class="name">Ketsuryugan [Stage 1]</span><span class="val">+1</span></label>
+          <label class="check"><input type="checkbox" data-val="2"><span class="name">Ketsuryugan [Stage 2]</span><span class="val">+2</span></label>
+          <label class="check"><input type="checkbox" data-val="5"><span class="name">Ketsuryugan [Stage 3]</span><span class="val">+5</span></label>
+        </div>
+        <div>
+          <div class="subgroup-label">Advanced Eyes</div>
+          <label class="check"><input type="checkbox" data-val="5"><span class="name">Mangekyo</span><span class="val">+5</span></label>
+          <label class="check"><input type="checkbox" data-val="10"><span class="name">Eternal Mangekyo</span><span class="val">+10</span></label>
+          <label class="check"><input type="checkbox" data-val="10"><span class="name">Rinnegan</span><span class="val">+10</span></label>
+
+          <div class="subgroup-label">Jinchuriki</div>
+          <label class="check"><input type="checkbox" data-val="5"><span class="name">Jinchuriki [St 1]</span><span class="val">+5</span></label>
+          <label class="check"><input type="checkbox" data-val="5"><span class="name">Jinchuriki [St 2]</span><span class="val">+5</span></label>
+          <label class="check"><input type="checkbox" data-val="10"><span class="name">Tailed Beast Cloak</span><span class="val">+10</span></label>
+
+          <div class="subgroup-label">Gates &amp; Other</div>
+          <label class="check"><input type="checkbox" data-val="1"><span class="name">Green Gates</span><span class="val">+1</span></label>
+          <label class="check"><input type="checkbox" data-val="5"><span class="name">Blue Gates</span><span class="val">+5</span></label>
+          <label class="check"><input type="checkbox" data-val="10"><span class="name">Red Gates</span><span class="val">+10</span></label>
+          <label class="check"><input type="checkbox" data-val="5"><span class="name">Deepforest Emergence</span><span class="val">+5</span></label>
+          <label class="check"><input type="checkbox" data-val="2"><span class="name">Rift</span><span class="val">+2</span></label>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:6px;">
+        <label style="margin:0;">Any other unlisted awakenings <span class="points-tag">+1 each</span></label>
+        <input type="number" id="otherAwaken" min="0" value="0" style="max-width:110px;">
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Bloodlines · Embers Ledger</span>
+    <span>values based on community reports — subject to change with updates</span>
+  </footer>
+</main>
+
+<script>
+// ---- ember particles ----
+const pWrap = document.getElementById('particles');
+for(let i=0;i<26;i++){
+  const p = document.createElement('div');
+  p.className = 'particle';
+  const size = 2 + Math.random()*4;
+  p.style.width = size+'px';
+  p.style.height = size+'px';
+  p.style.left = Math.random()*100+'vw';
+  p.style.setProperty('--drift', (Math.random()*80-40)+'px');
+  p.style.animationDuration = (9 + Math.random()*10)+'s';
+  p.style.animationDelay = (Math.random()*14)+'s';
+  pWrap.appendChild(p);
+}
+
+// ---- calculation ----
+const $ = (id) => document.getElementById(id);
+
+function calc(){
+  const age = Math.max(0, parseInt($('age').value) || 0);
+  const rank = parseInt($('rank').value) || 0;
+  const chakra = Math.max(0, parseInt($('chakra').value) || 0);
+  const jutsu = Math.max(0, parseInt($('jutsu').value) || 0);
+  const bosses = $('bosses').checked ? 10 : 0;
+  const titles = Math.max(0, parseInt($('titles').value) || 0);
+  const schemHave = $('schemHave').checked;
+  const otherAwaken = Math.max(0, parseInt($('otherAwaken').value) || 0);
+
+  let ageBonus = 0;
+  if(age >= 25){
+    ageBonus += 2; // Flat +2 for reaching age 25
+    ageBonus += Math.floor(age/10); // +1 for every full 10th age up
+  }
+
+  let titleBonus = 0;
+  if(titles >= 1){
+    titleBonus = 3 + (titles - 1) * 1;
+  }
+
+  let awakenSum = 0;
+  document.querySelectorAll('.checklist-grid input[type="checkbox"]').forEach(cb=>{
+    if(cb.checked) awakenSum += parseInt(cb.dataset.val) || 0;
+  });
+  awakenSum += otherAwaken;
+
+  const total = ageBonus + rank + chakra + (jutsu * 3) + bosses + titleBonus + (schemHave ? 25 : 0) + awakenSum;
+
+  $('total').textContent = total;
+
+  const lockPill = $('lockPill');
+  const warn = $('ageWarning');
+  if(age >= 25){
+    lockPill.textContent = '✓ unlocked';
+    lockPill.className = 'lock-pill open';
+    warn.style.display = 'none';
+  } else {
+    lockPill.textContent = '🔒 requires age 25+';
+    lockPill.className = 'lock-pill locked';
+    warn.style.display = 'flex';
+  }
+}
+
+document.querySelectorAll('input, select').forEach(el=>{
+  el.addEventListener('input', calc);
+  el.addEventListener('change', calc);
+});
+
+calc();
+</script>
+
+</body>
+</html>
